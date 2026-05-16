@@ -2,12 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import type { BreadType, StoredOrder } from "@/types";
 import {
-  getAllOrders,
+  fetchAllOrders,
   deleteOrderForEmployee,
-  clearAllLocalOrders,
+  clearAllOrders,
 } from "@/lib/orders-store";
 import { getEmployeePhoto } from "@/data/employee-images";
 import { breadLabel } from "@/lib/bread";
@@ -63,11 +63,28 @@ type PendingConfirm =
   | { kind: "clear-all" };
 
 export function SummaryTable() {
-  const [orders, setOrders] = useState<StoredOrder[]>(() => getAllOrders());
+  const [orders, setOrders] = useState<StoredOrder[]>([]);
+  const [loading, setLoading] = useState(true);
   const [pendingConfirm, setPendingConfirm] = useState<PendingConfirm>(null);
 
-  const refresh = useCallback(() => {
-    setOrders(getAllOrders());
+  const refresh = useCallback(async () => {
+    const next = await fetchAllOrders();
+    setOrders(next);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    fetchAllOrders()
+      .then((rows) => {
+        if (!cancelled) setOrders(rows);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   function requestDeleteOne(slug: string, name: string) {
@@ -82,16 +99,32 @@ export function SummaryTable() {
     setPendingConfirm(null);
   }
 
-  function runConfirm() {
+  async function runConfirm() {
     const p = pendingConfirm;
     if (!p) return;
     if (p.kind === "delete-one") {
-      deleteOrderForEmployee(p.slug);
+      await deleteOrderForEmployee(p.slug);
     } else {
-      clearAllLocalOrders();
+      await clearAllOrders();
     }
     setPendingConfirm(null);
-    refresh();
+    await refresh();
+  }
+
+  if (loading) {
+    return (
+      <div
+        className="flex flex-col items-center justify-center gap-3 rounded-3xl px-6 py-16 text-center text-stone-400"
+        style={{
+          background:
+            "linear-gradient(135deg, rgba(245,130,32,0.04), rgba(245,130,32,0.02))",
+          border: "1px solid rgba(245,130,32,0.15)",
+        }}
+      >
+        <span className="text-3xl animate-pulse">⏳</span>
+        <p className="text-sm">بنجيب الأوردرات من السيرفر…</p>
+      </div>
+    );
   }
 
   if (orders.length === 0) {
@@ -294,9 +327,9 @@ export function SummaryTable() {
         }
         description={
           pendingConfirm?.kind === "clear-all"
-            ? "اللستة هتتفضّى بالكامل على الجهاز ده، ومفيش تراجع تلقائي — اتأكّد قبل ما تمشي."
+            ? "اللستة هتتفضّى بالكامل من قاعدة البيانات، ومفيش تراجع تلقائي — اتأكّد قبل ما تمشي."
             : pendingConfirm?.kind === "delete-one"
-              ? `أوردر «${pendingConfirm.name}» هيختفي من الملخص. لو حابب تسجّل تاني، يرجع من صفحة الاسم.`
+              ? `أوردر «${pendingConfirm.name}» هيختفي من الملخص على السيرفر. لو حابب تسجّل تاني، يرجع من صفحة الاسم.`
               : ""
         }
         confirmLabel={

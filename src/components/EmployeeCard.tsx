@@ -38,7 +38,7 @@ export function EmployeeCard({ employee, index = 0 }: Props) {
     const slug = employee.slug;
     if (isBuiltinEmployeeSlug(slug)) {
       hideBuiltinSlug(slug);
-      deleteOrderForEmployee(slug);
+      await deleteOrderForEmployee(slug);
       emitTeamChanged();
       setConfirmDelete(false);
       return;
@@ -55,7 +55,7 @@ export function EmployeeCard({ employee, index = 0 }: Props) {
       setConfirmDelete(false);
       return;
     }
-    deleteOrderForEmployee(slug);
+    await deleteOrderForEmployee(slug);
     emitTeamChanged();
     setConfirmDelete(false);
   }
@@ -200,7 +200,7 @@ export function EmployeeCard({ employee, index = 0 }: Props) {
       description={
         isBuiltinEmployeeSlug(employee.slug)
           ? "هيختفي من القائمة على الجهاز ده. تقدر ترجّعه من أسفل الصفحة (الموظفين المخفيين)."
-          : "هيتشال من قاعدة البيانات ومن الطلبات المحفوظة على الجهاز ده."
+          : "هيتشال من قاعدة البيانات ومن الطلبات المسجّلة على السيرفر."
       }
       confirmLabel="أيوه، امسح"
       variant="danger"

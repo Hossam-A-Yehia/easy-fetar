@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import type { BreadType, Employee, OrderLine } from "@/types";
+import type { BreadType, Employee, OrderLine, StoredOrder } from "@/types";
 import {
   MENU_CATEGORY_ORDER,
   MENU_ITEMS,
@@ -11,7 +11,7 @@ import {
 } from "@/data/menu";
 import { BreadSelector } from "@/components/BreadSelector";
 import { DynamicOptions } from "@/components/DynamicOptions";
-import { upsertLocalOrder, getOrderForEmployee } from "@/lib/orders-store";
+import { fetchOrderForEmployee, upsertOrder } from "@/lib/orders-store";
 import { breadLabel } from "@/lib/bread";
 
 type Props = {
@@ -24,8 +24,7 @@ type ItemDraft = {
   saladTahini: boolean | null;
 };
 
-function buildInitialSelection(slug: string): Record<string, ItemDraft> {
-  const existing = getOrderForEmployee(slug);
+function selectionFromStored(existing?: StoredOrder): Record<string, ItemDraft> {
   const out: Record<string, ItemDraft> = {};
   if (existing?.lines?.length) {
     for (const l of existing.lines) {
@@ -61,15 +60,35 @@ export function OrderForm({ employee }: Props) {
     return map;
   }, []);
 
-  const [selected, setSelected] = useState<Record<string, ItemDraft>>(() =>
-    buildInitialSelection(employee.slug),
-  );
-  const [notes, setNotes] = useState(() => {
-    const existing = getOrderForEmployee(employee.slug);
-    return existing?.notes?.trim() ?? "";
-  });
+  const [selected, setSelected] = useState<Record<string, ItemDraft>>({});
+  const [notes, setNotes] = useState("");
+  const [bootstrapped, setBootstrapped] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [status, setStatus] = useState<"idle" | "error">("idle");
   const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    setBootstrapped(false);
+    fetchOrderForEmployee(employee.slug)
+      .then((existing) => {
+        if (cancelled) return;
+        setSelected(selectionFromStored(existing));
+        setNotes(existing?.notes?.trim() ?? "");
+      })
+      .catch(() => {
+        if (cancelled) return;
+        toast.error("مقدرناش نحمّل الأوردر السابق — جرّب تاني أو كمّل من الأول.", {
+          description: "لو السيرفر مش متصل، تأكّد من إعدادات Supabase.",
+        });
+      })
+      .finally(() => {
+        if (!cancelled) setBootstrapped(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [employee.slug]);
 
   function toggleItem(menuItemId: string, checked: boolean) {
     setSelected((prev) => {
@@ -92,8 +111,9 @@ export function OrderForm({ employee }: Props) {
     });
   }
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (!bootstrapped || submitting) return;
     setStatus("idle");
     setMessage("");
 
@@ -138,21 +158,46 @@ export function OrderForm({ employee }: Props) {
       });
     }
 
-    upsertLocalOrder({
-      employeeSlug: employee.slug,
-      employeeName: employee.name,
-      lines: built,
-      notes: notes.trim(),
-    });
-
-    setStatus("idle");
-    setMessage("");
-    toast.success("تمام يا فنان — الأوردر اتسجّل 👌", {
-      description:
-        "يلا بصّ على الملخص: هتلاقي طلبك مع لمة الفريق… وبالهنا والشفا.",
-    });
-    router.push("/summary");
+    setSubmitting(true);
+    try {
+      const result = await upsertOrder({
+        employeeSlug: employee.slug,
+        employeeName: employee.name,
+        lines: built,
+        notes: notes.trim(),
+      });
+      if (!result.ok) {
+        const { code, detail, hint, httpStatus } = result.error;
+        const tech = [detail, hint].filter(Boolean).join(" — ");
+        const lines =
+          httpStatus === 503 || code === "not_configured"
+            ? [
+                "المفتاح SUPABASE_SERVICE_ROLE_KEY مش موجود في بيئة السيرفر.",
+                "في التطوير المحلي: ضيفه في ملفّ .env.local (مش بسّ .env لو مش متقرأ).",
+                "بعد التعديل أوقف السيرفر وشغّله من جديد.",
+              ]
+            : [
+                "شغّل سكربت supabase/schema-employee-orders.sql في SQL Editor على Supabase.",
+                "لو ظهر permission denied شغّل سطر الـ GRANT اللي في نفس الملف.",
+              ];
+        toast.error("مش قادرين نسجّل الطلب في قاعدة البيانات.", {
+          description: tech ? `${tech}\n${lines.join("\n")}` : lines.join("\n"),
+          duration: 12_000,
+        });
+        return;
+      }
+      setStatus("idle");
+      setMessage("");
+      toast.success("تمام يا فنان — الأوردر اتسجّل 👌", {
+        description:
+          "يلا بصّ على الملخص: هتلاقي طلبك مع لمة الفريق… وبالهنا والشفا.",
+      });
+      router.push("/summary");
+    } finally {
+      setSubmitting(false);
+    }
   }
+
 
   const previewIds = orderedSelectedIds(selected);
 
@@ -413,8 +458,12 @@ export function OrderForm({ employee }: Props) {
       ) : null}
 
       {/* ── Submit ── */}
-      <button type="submit" className="btn-primary w-full py-4 text-base">
-        <span>احفظ الأوردر</span>
+      <button
+        type="submit"
+        disabled={!bootstrapped || submitting}
+        className="btn-primary w-full py-4 text-base disabled:pointer-events-none disabled:opacity-60"
+      >
+        <span>{submitting ? "بنسجّل…" : bootstrapped ? "احفظ الأوردر" : "جاري التحميل…"}</span>
       </button>
 
       {/* ── Preview ── */}
