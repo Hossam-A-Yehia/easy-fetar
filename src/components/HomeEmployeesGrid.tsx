@@ -40,35 +40,37 @@ export function HomeEmployeesGrid({ initialBuiltIns }: Props) {
 
   return (
     <>
-      <div className="gap-3">
-        <div className="flex items-center gap-3">
-          <h2 className="text-lg font-bold text-stone-100">
-            انت مين ياسطا؟{" "}
+      <header className="flex flex-col gap-3 sm:gap-4">
+        <div className="flex flex-col items-center gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-3 sm:gap-y-2">
+          <h2 className="w-full text-center text-base font-bold leading-snug text-stone-100 sm:w-auto sm:text-start sm:text-lg">
+            انت مين ياسطا؟
           </h2>
           <span
-            className="animate-badge-pop rounded-full px-3 py-0.5 text-xs font-bold text-white"
+            className="animate-badge-pop max-w-full rounded-2xl px-3 py-2 text-center text-[11px] font-bold leading-snug text-white sm:rounded-full sm:py-1 sm:text-xs sm:leading-normal"
             style={{
               background: "linear-gradient(135deg, #F58220, #d96e15)",
             }}
           >
-            {employees.length} واحد في الفريق (ربنا يزيد ويبارك)
+            <span className="whitespace-normal sm:whitespace-nowrap">
+              {employees.length} في الفريق (ربنا يزيد ويبارك)
+            </span>
           </span>
         </div>
-        <h2 className="mt-1 text-base font-semibold leading-relaxed text-stone-200">
+        <p className="text-start text-pretty text-base font-semibold leading-relaxed text-stone-200">
           لو مش موجود في القائمه هات ما يثبت انك في التيم وابعتلي اضيفك في
           القايمه - تطبق الشروط والاحكام
-        </h2>
-        <h2 className="mt-1 text-base font-semibold leading-relaxed text-stone-200">
-          ياعم والله ما مزعلك،
+        </p>
+        <p className="text-start text-pretty text-base font-semibold leading-relaxed text-stone-200">
+          ياعم والله ما مزعلك،{" "}
           <Link
             href="/join"
-            className="font-semibold text-orange-400 underline-offset-4 transition-colors hover:text-orange-300 hover:underline"
+            className="font-semibold text-orange-400 underline-offset-4 transition-colors hover:text-orange-300 hover:underline py-1.5 touch-manipulation"
           >
             ادخل هنا
           </Link>{" "}
           ضيف البيانات بتاعتك وهتنضاف وهتفطر و خلي الفقير ياكل
-        </h2>
-      </div>
+        </p>
+      </header>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {employees.map((employee, index) => (
@@ -88,9 +90,11 @@ export function HomeEmployeesGrid({ initialBuiltIns }: Props) {
             {hiddenSlugs.map((slug) => (
               <li
                 key={slug}
-                className="flex flex-wrap items-center justify-between gap-2 text-sm text-stone-400"
+                className="flex flex-col gap-2 rounded-xl border border-white/5 bg-stone-950/30 p-3 sm:flex-row sm:items-center sm:justify-between sm:border-0 sm:bg-transparent sm:p-0"
               >
-                <span>{hiddenBuiltinDisplayName(slug)}</span>
+                <span className="min-w-0 break-words text-sm text-stone-400">
+                  {hiddenBuiltinDisplayName(slug)}
+                </span>
                 <button
                   type="button"
                   onClick={() => {
@@ -98,7 +102,7 @@ export function HomeEmployeesGrid({ initialBuiltIns }: Props) {
                     void getAllEmployeesMergedAsync().then(setEmployees);
                     setHiddenSlugs(getHiddenBuiltinSlugs());
                   }}
-                  className="rounded-lg border border-orange-500/35 px-3 py-1 text-xs font-semibold text-orange-300 hover:bg-orange-500/10"
+                  className="min-h-[44px] w-full shrink-0 rounded-lg border border-orange-500/35 px-3 py-2 text-xs font-semibold text-orange-300 hover:bg-orange-500/10 sm:min-h-0 sm:w-auto sm:py-1"
                 >
                   إظهار تاني
                 </button>
