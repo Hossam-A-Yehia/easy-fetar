@@ -1,65 +1,94 @@
-import Image from "next/image";
+import { EMPLOYEES } from "@/data/employees";
+import { HomeEmployeesGrid } from "@/components/HomeEmployeesGrid";
+import { BRAND } from "@/lib/brand";
 
-export default function Home() {
+export default function HomePage() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="space-y-12">
+      {/* ── Hero ── */}
+      <section className="animate-hero-in relative overflow-hidden rounded-3xl px-6 py-12 text-center sm:px-12 sm:py-16">
+        {/* Card background */}
+        <div
+          className="absolute inset-0 rounded-3xl"
+          style={{
+            background:
+              "linear-gradient(135deg, rgba(245,130,32,0.14) 0%, rgba(28,30,24,0.78) 55%, rgba(245,130,32,0.06) 100%)",
+            backdropFilter: "blur(8px)",
+            border: "1px solid rgba(255,255,255,0.1)",
+          }}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+        {/* Decorative spin ring */}
+        <div
+          aria-hidden
+          className="animate-spin-slow pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full opacity-20"
+          style={{
+            background:
+              "conic-gradient(from 0deg, #F58220, rgba(249,167,64,0.5), transparent, #F58220)",
+          }}
+        />
+        <div
+          aria-hidden
+          className="animate-spin-slow pointer-events-none absolute -bottom-16 -left-16  rounded-full opacity-15"
+          style={{
+            background:
+              "conic-gradient(from 180deg, #f9a740, #F58220, transparent, #f9a740)",
+            animationDirection: "reverse",
+          }}
+        />
+
+        {/* Badge */}
+        <div className="animate-badge-pop relative mb-5 inline-flex items-center gap-2 rounded-full border border-orange-500/35 bg-stone-900/60 px-4 py-1.5 text-xs font-semibold text-orange-200 shadow-sm backdrop-blur-sm">
+          <span
+            className="inline-block h-2 w-2 animate-pulse rounded-full"
+            style={{ background: "#F58220" }}
+          />
+          إيزي فطار — منّا ليكم
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        {/* Heading */}
+        <h1
+          className="relative mb-4 text-4xl font-black leading-tight sm:text-5xl"
+          style={{ animationDelay: "80ms" }}
+        >
+          <span className="gradient-text">{BRAND.arName}</span>
+        </h1>
+
+        {/* Description */}
+        <p
+          className="animate-fade-in-up relative mx-auto text-base leading-relaxed text-stone-400 sm:text-lg"
+          style={{ animationDelay: "150ms" }}
+        >
+         دوس علي اسمك واختار هتفطر ايه يا صاحبي وبالهنا والشفا علي قلبك 🙌
+        </p>
+
+        {/* Floating food icons */}
+        <div
+          aria-hidden
+          className="animate-float pointer-events-none absolute right-8 top-8 text-3xl opacity-30"
+          style={{ animationDelay: "0s" }}
+        >
+          🧆
         </div>
-      </main>
+        <div
+          aria-hidden
+          className="animate-float pointer-events-none absolute bottom-8 left-8 text-3xl opacity-30"
+          style={{ animationDelay: "-1.5s" }}
+        >
+          🥙
+        </div>
+        <div
+          aria-hidden
+          className="animate-float pointer-events-none absolute right-20 bottom-10 text-2xl opacity-20"
+          style={{ animationDelay: "-3s" }}
+        >
+          🫓
+        </div>
+      </section>
+
+      {/* ── Employee Grid ── */}
+      <section aria-label="أسماء الفريق" className="space-y-5">
+        <HomeEmployeesGrid initialBuiltIns={EMPLOYEES} />
+      </section>
     </div>
   );
 }
