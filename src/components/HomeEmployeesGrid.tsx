@@ -4,10 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { Employee } from "@/types";
 import { EmployeeCard } from "@/components/EmployeeCard";
-import {
-  getAllEmployeesMerged,
-  getAllEmployeesMergedAsync,
-} from "@/lib/team-members-store";
+import { getAllEmployeesMergedAsync } from "@/lib/team-members-store";
 import {
   getHiddenBuiltinSlugs,
   hiddenBuiltinDisplayName,

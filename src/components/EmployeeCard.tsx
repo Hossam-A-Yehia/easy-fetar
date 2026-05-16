@@ -7,7 +7,6 @@ import type { Employee } from "@/types";
 import { getEmployeePhoto } from "@/data/employee-images";
 import { isBuiltinEmployeeSlug } from "@/data/employees";
 import { hideBuiltinSlug } from "@/lib/employee-overrides";
-import { removeGuestFromLocalStorage } from "@/lib/team-members-store";
 import { emitTeamChanged } from "@/lib/team-events";
 import { deleteOrderForEmployee } from "@/lib/orders-store";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -45,13 +44,17 @@ export function EmployeeCard({ employee, index = 0 }: Props) {
       return;
     }
     try {
-      await fetch(`/api/team/member/${encodeURIComponent(slug)}`, {
+      const res = await fetch(`/api/team/member/${encodeURIComponent(slug)}`, {
         method: "DELETE",
       });
+      if (!res.ok) {
+        setConfirmDelete(false);
+        return;
+      }
     } catch {
-      /* شبكة: نكمّل حذف محلي */
+      setConfirmDelete(false);
+      return;
     }
-    removeGuestFromLocalStorage(slug);
     deleteOrderForEmployee(slug);
     emitTeamChanged();
     setConfirmDelete(false);
@@ -197,7 +200,7 @@ export function EmployeeCard({ employee, index = 0 }: Props) {
       description={
         isBuiltinEmployeeSlug(employee.slug)
           ? "هيختفي من القائمة على الجهاز ده. تقدر ترجّعه من أسفل الصفحة (الموظفين المخفيين)."
-          : "هيتشال من القائمة والطلبات المحفوظة على الجهاز ده، ولو السيرفر مفعّل هيتشال من قاعدة البيانات كمان."
+          : "هيتشال من قاعدة البيانات ومن الطلبات المحفوظة على الجهاز ده."
       }
       confirmLabel="أيوه، امسح"
       variant="danger"

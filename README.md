@@ -1,36 +1,49 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# إيزي فطار · Easy Fetar
 
-## Getting Started
+موقع Next.js لواجهة خفيفة لعرض الفريق وصفحة انضمام للضيوف، مع ربط اختياري بـ Supabase للبيانات والصور.
 
-First, run the development server:
+## المتطلبات
+
+- Node.js 20+
+- حساب [Supabase](https://supabase.com) (اختياري للتطوير المحلي بدون قاعدة — يعتمد على ما تشغّله في الكود)
+
+## تشغيل المشروع محليًا
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+افتح [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## متغيرات البيئة
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. انسخ `.env.local.example` إلى `.env.local`.
+2. ضع من لوحة Supabase: **Project URL**، **anon key**، و**service role** (للواجهات الخلفية التي تتجاوز RLS فقط — لا ترفعها للمتصفح).
 
-## Learn More
+> لا تشارك مفتاح الـ service role علنًا ولا ترفعه إلى Git.
 
-To learn more about Next.js, take a look at the following resources:
+## قاعدة البيانات (Supabase)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+شغّل السكربت في **SQL Editor** على مشروعك:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+`supabase/schema-guest-team.sql`
 
-## Deploy on Vercel
+يُنشئ جدول أعضاء الفريق الضيوف، سياسات القراءة العامة، وباكت التخزين `team-avatars` للصور.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## السكربتات
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| الأمر        | الوظيفة              |
+| ------------ | -------------------- |
+| `npm run dev`    | خادم التطوير         |
+| `npm run build`  | بناء الإنتاج         |
+| `npm run start`  | تشغيل بعد البناء     |
+| `npm run lint`   | ESLint               |
+
+## التقنية
+
+Next.js (App Router) · React 19 · Tailwind CSS v4 · TypeScript · Supabase JS · Sonner للإشعارات
+
+## النشر
+
+مناسب للنشر على [Vercel](https://vercel.com) أو أي استضافة تدعم Next.js؛ أضف نفس متغيرات البيئة في لوحة الاستضافة.

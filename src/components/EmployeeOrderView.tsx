@@ -9,7 +9,6 @@ import { isBuiltinEmployeeSlug } from "@/data/employees";
 import { OrderFormDynamic } from "@/components/OrderFormDynamic";
 import { fetchGuestTeamMemberBySlug } from "@/lib/guest-team-db";
 import { resolveBuiltinForDisplay } from "@/lib/employee-overrides";
-import { resolveEmployeeSlug } from "@/lib/team-members-store";
 import { TEAM_CHANGED_EVENT } from "@/lib/team-events";
 
 type Props = {
@@ -18,7 +17,7 @@ type Props = {
   serverEmployee?: Employee | null;
 };
 
-/** لسه محمّلين من المتصفح (ضيف في localStorage) */
+/** لسه متحمّلين الصفحة (ما جابناش الموظف من السيرفر في أول render) */
 const Pending = Symbol("employee-pending");
 
 export function EmployeeOrderView({
@@ -48,9 +47,9 @@ export function EmployeeOrderView({
         return;
       }
 
-      const local = resolveEmployeeSlug(slug);
-      if (local) {
-        setEmployee(local);
+      if (isBuiltinEmployeeSlug(slug)) {
+        const d = resolveBuiltinForDisplay(slug);
+        setEmployee(d ?? null);
         return;
       }
 
@@ -66,9 +65,14 @@ export function EmployeeOrderView({
 
   useEffect(() => {
     const onTeam = () => {
-      if (!isBuiltinEmployeeSlug(slug)) return;
-      const d = resolveBuiltinForDisplay(slug);
-      setEmployee(d ?? null);
+      if (isBuiltinEmployeeSlug(slug)) {
+        const d = resolveBuiltinForDisplay(slug);
+        setEmployee(d ?? null);
+        return;
+      }
+      void fetchGuestTeamMemberBySlug(slug).then((remote) => {
+        setEmployee(remote ?? null);
+      });
     };
     window.addEventListener(TEAM_CHANGED_EVENT, onTeam);
     return () => window.removeEventListener(TEAM_CHANGED_EVENT, onTeam);

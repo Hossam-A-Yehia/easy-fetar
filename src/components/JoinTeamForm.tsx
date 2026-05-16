@@ -3,10 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useState, type FormEvent } from "react";
 import { TeamPhotoPicker } from "@/components/TeamPhotoPicker";
-import {
-  addGuestEmployee,
-  saveGuestToLocalStorage,
-} from "@/lib/team-members-store";
+import { emitTeamChanged } from "@/lib/team-events";
 
 type ApiJoinResponse =
   | { ok: true; employee: { id: string; slug: string; name: string; imageUrl: string | null } }
@@ -24,6 +21,8 @@ function mapApiError(code: string | undefined): string {
       return "فشل رفع الصورة. حاول مرة تانية.";
     case "insert_failed":
       return "فشل حفظ البيانات. جرّب تاني.";
+    case "not_configured":
+      return "قاعدة البيانات مش مفعّلة. ثبّت مفاتيح Supabase في السيرفر (مثلاً SUPABASE_SERVICE_ROLE_KEY).";
     case "bad_form":
       return "البيانات وصلت غلط. حدّث الصفحة.";
     default:
@@ -69,26 +68,14 @@ export function JoinTeamForm() {
         const data = (await res.json().catch(() => ({}))) as ApiJoinResponse;
 
         if (res.ok && data.ok && data.employee) {
-          saveGuestToLocalStorage({
-            id: data.employee.id,
-            slug: data.employee.slug,
-            name: data.employee.name,
-            imageUrl: data.employee.imageUrl,
-          });
+          emitTeamChanged();
           router.push(`/employee/${encodeURIComponent(data.employee.slug)}`);
           return;
         }
 
         if (res.status === 503) {
-          if (photoFile && photoFile.size > 0) {
-            setError(
-              "السيرفر مش مضبوط لرفع الصور حالياً. ثبّت متغيرات Supabase أو سجّل من غير صورة.",
-            );
-            setBusy(false);
-            return;
-          }
-          const row = addGuestEmployee(trimmed, null);
-          router.push(`/employee/${encodeURIComponent(row.slug)}`);
+          setError(mapApiError("not_configured"));
+          setBusy(false);
           return;
         }
 

@@ -6,10 +6,6 @@ import { TeamPhotoPicker } from "@/components/TeamPhotoPicker";
 import { getEmployeePhoto } from "@/data/employee-images";
 import { isBuiltinEmployeeSlug } from "@/data/employees";
 import { setBuiltinOverride } from "@/lib/employee-overrides";
-import {
-  patchGuestInLocalStorage,
-  saveGuestToLocalStorage,
-} from "@/lib/team-members-store";
 import { emitTeamChanged } from "@/lib/team-events";
 import { withImageCacheBust } from "@/lib/team-image-display";
 
@@ -123,55 +119,22 @@ export function EmployeeEditDialog({ employee, open, onClose }: Props) {
       };
 
       if (res.ok && data.ok && data.employee) {
-        saveGuestToLocalStorage(data.employee);
         emitTeamChanged();
         onClose();
         return;
       }
 
       if (res.status === 503) {
-        if (photoFile && photoFile.size > 0) {
-          setError(
-            "تعديل الصورة محليًا مش متاح من غير Supabase. امسح الصورة أو فعّل السيرفر.",
-          );
-          setBusy(false);
-          return;
-        }
-        const patch: Partial<Pick<Employee, "name" | "imageUrl">> = {
-          name: trimmed,
-        };
-        if (clearPhoto) patch.imageUrl = null;
-        const patched = patchGuestInLocalStorage(employee.slug, patch);
-        if (!patched) {
-          setError("الموظف مش موجود محليًا.");
-          setBusy(false);
-          return;
-        }
-        emitTeamChanged();
-        onClose();
+        setError(
+          "تعديل أعضاء الفريق محتاج Supabase مفعّل على السيرفر.",
+        );
+        setBusy(false);
         return;
       }
 
       if (res.status === 404) {
-        if (photoFile && photoFile.size > 0) {
-          setError(
-            "السجل مش على السيرفر؛ تقدر تعدّل الاسم أو تمسح الصورة بس محليًا.",
-          );
-          setBusy(false);
-          return;
-        }
-        const patch: Partial<Pick<Employee, "name" | "imageUrl">> = {
-          name: trimmed,
-        };
-        if (clearPhoto) patch.imageUrl = null;
-        const patched = patchGuestInLocalStorage(employee.slug, patch);
-        if (!patched) {
-          setError("مش لاقي السجل.");
-          setBusy(false);
-          return;
-        }
-        emitTeamChanged();
-        onClose();
+        setError("مفيش سجل لهذا الاسم في قاعدة البيانات.");
+        setBusy(false);
         return;
       }
 
