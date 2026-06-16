@@ -11,6 +11,11 @@ import {
 } from "@/lib/orders-store";
 import { getEmployeePhoto } from "@/data/employee-images";
 import { breadLabel } from "@/lib/bread";
+import {
+  formatPrice,
+  lineTotal,
+  orderTotal,
+} from "@/lib/pricing";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 function formatOrderLine(
@@ -18,14 +23,16 @@ function formatOrderLine(
   menuItemName: string,
   breadType: BreadType,
   salad: boolean | null,
+  linePrice: number,
 ): string {
-  let t = `${quantity}× ${menuItemName} — ${breadLabel(breadType)}`;
+  let t = `${quantity}× ${menuItemName} — ${breadLabel(breadType)} — ${formatPrice(linePrice)}`;
   if (salad === true) t += " — وسلطة وطحينة كده";
   else if (salad === false) t += " — من غير سلطة ولا طحينة";
   return t;
 }
 
 function formatOrderBody(o: StoredOrder): ReactNode {
+  const total = orderTotal(o.lines);
   return (
     <div className="space-y-2">
       <ul className="space-y-1.5">
@@ -43,10 +50,14 @@ function formatOrderBody(o: StoredOrder): ReactNode {
               line.menuItemName,
               line.breadType,
               line.saladAndTahini,
+              lineTotal(line),
             )}
           </li>
         ))}
       </ul>
+      <p className="text-sm font-bold text-orange-300">
+        إجمالي {o.employeeName}: {formatPrice(total)}
+      </p>
       {o.notes ? (
         <p className="flex items-center gap-1.5 text-xs text-stone-500">
           <span>📝</span>
@@ -154,16 +165,31 @@ export function SummaryTable() {
     );
   }
 
+  const grandTotal = orders.reduce(
+    (sum, o) => sum + orderTotal(o.lines),
+    0,
+  );
+
   return (
     <div className="space-y-5">
       {/* Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <span
             className="rounded-full px-3 py-1 text-xs font-bold text-white"
             style={{ background: "linear-gradient(135deg, #F58220, #d96e15)" }}
           >
             {orders.length} أوردر
+          </span>
+          <span
+            className="rounded-full px-3 py-1 text-xs font-bold"
+            style={{
+              background: "rgba(245,130,32,0.15)",
+              border: "1px solid rgba(245,130,32,0.35)",
+              color: "#fdba74",
+            }}
+          >
+            الإجمالي الكلي: {formatPrice(grandTotal)}
           </span>
           <span className="text-sm text-stone-500">
             للمطعم: اطبع الصفحة من المتصفح — المعاينة متظبطة للورقة.

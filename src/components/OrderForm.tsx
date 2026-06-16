@@ -13,6 +13,12 @@ import { BreadSelector } from "@/components/BreadSelector";
 import { DynamicOptions } from "@/components/DynamicOptions";
 import { fetchOrderForEmployee, upsertOrder } from "@/lib/orders-store";
 import { breadLabel } from "@/lib/bread";
+import {
+  formatPrice,
+  lineTotal,
+  orderTotal,
+  unitPrice,
+} from "@/lib/pricing";
 
 type Props = {
   employee: Employee;
@@ -201,6 +207,23 @@ export function OrderForm({ employee }: Props) {
 
   const previewIds = orderedSelectedIds(selected);
 
+  const previewLines: OrderLine[] = previewIds.flatMap((id) => {
+    const m = getMenuItemById(id);
+    const draft = selected[id];
+    if (!m || !draft || !draft.bread) return [];
+    return [
+      {
+        menuItemId: m.id,
+        menuItemName: m.name,
+        breadType: draft.bread,
+        quantity: draft.quantity,
+        saladAndTahini: m.needsSaladTahiniOption ? draft.saladTahini : null,
+      },
+    ];
+  });
+
+  const previewTotal = orderTotal(previewLines);
+
   return (
     <form
       onSubmit={submit}
@@ -320,6 +343,13 @@ export function OrderForm({ employee }: Props) {
                             }`}
                           >
                             {item.name}
+                          </span>
+                          <span
+                            className={`shrink-0 text-xs font-bold tabular-nums ${
+                              isOn ? "text-orange-300" : "text-stone-500"
+                            }`}
+                          >
+                            {formatPrice(item.price)}
                           </span>
                         </button>
 
@@ -494,7 +524,12 @@ export function OrderForm({ employee }: Props) {
                 );
               }
               const needs = m.needsSaladTahiniOption;
-              let text = `${draft.quantity}× ${m.name} — ${breadLabel(draft.bread)}`;
+              const unit = unitPrice(m.price, draft.bread);
+              const total = unit * draft.quantity;
+              let text = `${draft.quantity}× ${m.name} — ${breadLabel(draft.bread)} — ${formatPrice(total)}`;
+              if (draft.quantity > 1) {
+                text += ` (${formatPrice(unit)} للواحد)`;
+              }
               if (needs && draft.saladTahini !== null) {
                 text += draft.saladTahini
                   ? " — وسلطة وطحينة كده"
@@ -511,6 +546,11 @@ export function OrderForm({ employee }: Props) {
               );
             })}
           </ul>
+          {previewLines.length > 0 ? (
+            <p className="mt-3 border-t border-stone-700/60 pt-3 text-sm font-bold text-orange-300">
+              الإجمالي: {formatPrice(previewTotal)}
+            </p>
+          ) : null}
           {notes.trim() ? (
             <p className="mt-3 border-t border-stone-700/60 pt-3 text-stone-500">
               📝 {notes.trim()}

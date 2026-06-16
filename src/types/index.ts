@@ -11,7 +11,9 @@ export interface MenuItem {
   id: string;
   name: string;
   category: string;
-  /** يظهر سؤال السلطة والطحينة (طعمية عادية، شيبسي، بطاطس شيبسي) */
+  /** السعر الأساسي (عيش شامي) بالجنيه */
+  price: number;
+  /** يظهر سؤال السلطة والطحينة (سندوتش طعمية، سندوتش شيبسي) */
   needsSaladTahiniOption: boolean;
 }
 

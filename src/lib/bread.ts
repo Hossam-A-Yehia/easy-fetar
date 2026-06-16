@@ -5,6 +5,8 @@ const LABELS: Record<BreadType, string> = {
   baladi: "عيش بلدي",
 };
 
+export const BALADI_SURCHARGE = 1;
+
 export function breadLabel(type: BreadType): string {
   return LABELS[type];
 }

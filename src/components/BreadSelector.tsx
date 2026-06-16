@@ -1,5 +1,5 @@
 import type { BreadType } from "@/types";
-import { BREAD_OPTIONS } from "@/lib/bread";
+import { BREAD_OPTIONS, BALADI_SURCHARGE } from "@/lib/bread";
 
 type Props = {
   value: BreadType | "";
@@ -10,7 +10,12 @@ type Props = {
 export function BreadSelector({ value, onChange, groupName }: Props) {
   return (
     <fieldset className="space-y-2">
-      <legend className="text-xs font-bold text-stone-300">شامي ولا بلدي؟</legend>
+      <legend className="text-xs font-bold text-stone-300">
+        شامي ولا بلدي؟
+        <span className="mt-0.5 block font-normal text-stone-500">
+          العيش البلدي +{BALADI_SURCHARGE} ج.م عن السعر
+        </span>
+      </legend>
       <div className="flex flex-wrap gap-2">
         {BREAD_OPTIONS.map((opt) => {
           const isSelected = value === opt.value;
