@@ -74,12 +74,6 @@ export const EMPLOYEES: Employee[] = [
     imageUrl: null,
   },
   {
-    id: "e13",
-    slug: "huda",
-    name: "هدى",
-    imageUrl: null,
-  },
-  {
     id: "e14",
     slug: "ahmed-eid",
     name: "أحمد عيد",
