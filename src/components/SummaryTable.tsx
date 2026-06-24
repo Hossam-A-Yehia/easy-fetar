@@ -17,6 +17,7 @@ import {
   orderTotal,
 } from "@/lib/pricing";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { generateOrdersPdf } from "@/lib/pdf-generator";
 
 const WHATSAPP_NUMBER = "201064665928";
 
@@ -129,6 +130,16 @@ export function SummaryTable() {
   const [orders, setOrders] = useState<StoredOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [pendingConfirm, setPendingConfirm] = useState<PendingConfirm>(null);
+  const [generatingPdf, setGeneratingPdf] = useState(false);
+
+  async function handleDownloadPdf() {
+    setGeneratingPdf(true);
+    try {
+      await generateOrdersPdf(orders);
+    } finally {
+      setGeneratingPdf(false);
+    }
+  }
 
   const refresh = useCallback(async () => {
     const next = await fetchAllOrders();
@@ -244,11 +255,12 @@ export function SummaryTable() {
             الإجمالي الكلي: {formatPrice(grandTotal)}
           </span>
           <span className="text-sm text-stone-500">
-            لما تكون جاهز، ابعت كل الطلبات لمطعم العمدة على الواتساب.
+            حمّل PDF أو ابعت الطلبات لمطعم العمدة — والطلبات تتمسح تلقائي كل يوم 10 مساءً
+            (مصر).
           </span>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <button
+        <button
             type="button"
             onClick={() => openWhatsAppWithOrders(orders)}
             className="flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium transition-all duration-200 hover:scale-[0.98]"
@@ -270,9 +282,58 @@ export function SummaryTable() {
             </svg>
             ابعت الطلبات كلها لمطعم العمدة
           </button>
-        <button
-          type="button"
-          onClick={requestClearAll}
+
+          <button
+            type="button"
+            onClick={handleDownloadPdf}
+            disabled={generatingPdf}
+            className="flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium transition-all duration-200 hover:scale-[0.98] disabled:opacity-60 disabled:cursor-wait"
+            style={{
+              border: "1.5px solid rgba(245,130,32,0.5)",
+              background: "linear-gradient(135deg, rgba(245,130,32,0.2), rgba(245,130,32,0.08))",
+              color: "#fdba74",
+            }}
+          >
+            {generatingPdf ? (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="animate-spin"
+                aria-hidden
+              >
+                <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+              </svg>
+            ) : (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+              >
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="12" y1="18" x2="12" y2="12" />
+                <line x1="9" y1="15" x2="15" y2="15" />
+              </svg>
+            )}
+            {generatingPdf ? "جاري التحميل..." : "حمّل PDF"}
+          </button>
+          <button
+            type="button"
+            onClick={requestClearAll}
           className="flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium transition-all duration-200 hover:scale-[0.98]"
           style={{
             border: "1.5px solid rgba(248,113,113,0.4)",

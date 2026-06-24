@@ -5,6 +5,7 @@ import {
   rowToStoredOrder,
   type EmployeeOrderRow,
 } from "@/lib/orders-db-map";
+import { clearAllOrdersInDb } from "@/lib/clear-all-orders";
 
 export const runtime = "nodejs";
 
@@ -138,14 +139,10 @@ export async function DELETE() {
     );
   }
 
-  const { error } = await admin
-    .from("employee_orders")
-    .delete()
-    .neq("employee_slug", "");
-
-  if (error) {
+  const result = await clearAllOrdersInDb(admin);
+  if (!result.ok) {
     return NextResponse.json(
-      { ok: false, code: "delete_failed", detail: error.message },
+      { ok: false, code: "delete_failed", detail: result.detail },
       { status: 500 },
     );
   }
